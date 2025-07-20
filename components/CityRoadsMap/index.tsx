@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { fetchRoadNetwork } from './utils/overpass'
+import { fetchRoadNetwork, filterRoadsByZoom } from './utils/overpass'
 import * as d3 from 'd3'
 import { decodeRoutes, getBoundsForRoutes, getExpandedBounds } from './utils/bounds'
 import type { CityRoadsMapProps, DecodedRoute } from './types'
@@ -14,6 +14,7 @@ interface Transform {
 export function CityRoadsMap({
   summaryPolyline,
   summaryPolylines,
+  showRoadNetwork = true, // 默认显示路网
 }: CityRoadsMapProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -28,6 +29,8 @@ export function CityRoadsMap({
   const boundsRef = useRef(null)
 
   const fetchRoads = useCallback(async (bounds: any) => {
+    if (!showRoadNetwork) return // 如果不显示路网，直接返回
+    
     try {
       setIsLoading(true)
       const roads = await fetchRoadNetwork(bounds)
@@ -37,7 +40,7 @@ export function CityRoadsMap({
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [showRoadNetwork])
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -46,12 +49,14 @@ export function CityRoadsMap({
     routes.current = decodeRoutes(summaryPolylines || (summaryPolyline ? [summaryPolyline] : []))
     boundsRef.current = getExpandedBounds(getBoundsForRoutes(routes.current), rect.width / rect.height)
     setRoadNetwork([])
-    fetchRoads(boundsRef.current)
-  }, [summaryPolyline, summaryPolylines, fetchRoads])
+    if (showRoadNetwork) {
+      fetchRoads(boundsRef.current)
+    }
+  }, [summaryPolyline, summaryPolylines, showRoadNetwork, fetchRoads])
 
   const renderMap = useCallback(() => {
     const canvas = canvasRef.current
-    if (!canvas || !roadNetwork.length) return
+    if (!canvas) return
 
     const ctx = canvas.getContext('2d')
     if (!ctx) return
@@ -96,21 +101,29 @@ export function CityRoadsMap({
     // Create path generator for canvas
     const path = d3.geoPath().projection(projection).context(ctx)
 
-    // Draw roads
-    ctx.beginPath()
-    ctx.strokeStyle = ROAD_STYLE.color
-    ctx.lineWidth = ROAD_STYLE.width / transform.k // 缩放时调整线宽
-    roadNetwork.forEach(road => {
-      const feature = {
-        type: 'Feature',
-        geometry: {
-          type: 'LineString',
-          coordinates: road.coordinates.map(([lat, lng]: [number, number]) => [lng, lat])
+    // 只在启用时绘制路网
+    if (showRoadNetwork && roadNetwork.length > 0) {
+      // 根据缩放级别过滤道路
+      const filteredRoads = filterRoadsByZoom(roadNetwork, transform.k)
+
+      // Draw roads with dynamic filtering
+      ctx.beginPath()
+      ctx.strokeStyle = ROAD_STYLE.color
+      ctx.lineWidth = ROAD_STYLE.width / transform.k
+      ctx.globalAlpha = ROAD_STYLE.opacity
+      filteredRoads.forEach(road => {
+        const feature = {
+          type: 'Feature',
+          geometry: {
+            type: 'LineString',
+            coordinates: road.coordinates.map(([lat, lng]: [number, number]) => [lng, lat])
+          }
         }
-      }
-      path(feature as any)
-    })
-    ctx.stroke()
+        path(feature as any)
+      })
+      ctx.stroke()
+      ctx.globalAlpha = 1.0 // 恢复默认透明度
+    }
 
     const isOnlyOneRoute = routes.current.length === 1
 
@@ -138,7 +151,7 @@ export function CityRoadsMap({
     })
 
     ctx.restore()
-  }, [roadNetwork, transform])
+  }, [roadNetwork, transform, showRoadNetwork])
 
 
   useEffect(() => {

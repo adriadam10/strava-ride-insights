@@ -2,9 +2,9 @@
  * 城市路线的默认样式
  */
 export const ROAD_STYLE = {
-  width: 0.3,
-  color: 'rgba(26, 26, 26, 0.8)',
-  opacity: 1,
+  width: 0.3, // 减少线宽
+  color: 'rgba(26, 26, 26, 0.5)', // 降低透明度，使路网更淡
+  opacity: 0.8, // 降低整体不透明度
 }
 
 /**

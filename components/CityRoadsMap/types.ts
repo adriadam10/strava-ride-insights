@@ -1,6 +1,7 @@
 export interface CityRoadsMapProps {
-  summaryPolylines?: string[] // 支持多条路线
-  summaryPolyline?: string // 保持向后兼容
+  summaryPolyline?: string
+  summaryPolylines?: string[]
+  showRoadNetwork?: boolean // 新增：控制是否显示路网
 }
 
 export interface Transform {

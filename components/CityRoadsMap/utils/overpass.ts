@@ -240,10 +240,49 @@ function processRoadNetwork(data: any) {
       }
 
       if (coordinates.length > 1) {
-        ways.push({ coordinates, highway: element.tags.highway })
+        ways.push({ 
+          coordinates, 
+          highway: element.tags.highway,
+          importance: getRoadImportance(element.tags.highway) // 添加道路重要性
+        })
       }
     }
   }
 
   return ways
+}
+
+// 道路重要性分级
+function getRoadImportance(highway: string): number {
+  const importanceMap: { [key: string]: number } = {
+    'motorway': 1,
+    'motorway_link': 1,
+    'trunk': 2,
+    'trunk_link': 2,
+    'primary': 3,
+    'primary_link': 3,
+    'secondary': 4,
+    'secondary_link': 4,
+    'tertiary': 5,
+    'tertiary_link': 5,
+    'residential': 6,
+    'living_street': 7,
+  }
+  return importanceMap[highway] || 8
+}
+
+// 根据缩放级别过滤道路
+export function filterRoadsByZoom(roads: any[], zoomLevel: number): any[] {
+  // 缩放级别越小，显示的道路重要性等级越高（数字越小）
+  let maxImportance: number
+  
+  if (zoomLevel <= 0.8) {
+    maxImportance = 3 // 只显示主要道路
+  } else if (zoomLevel <= 1.5) {
+    maxImportance = 5 // 显示次要道路
+  } else {
+    maxImportance = 8 // 显示所有道路
+  }
+  
+  return roads.filter(road => road.importance <= maxImportance)
 }
