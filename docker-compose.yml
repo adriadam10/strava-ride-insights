@@ -9,6 +9,7 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=development
+      - TZ=Europe/Madrid
     volumes:
       - .:/app
       - /app/node_modules
