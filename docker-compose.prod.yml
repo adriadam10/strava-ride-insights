@@ -1,5 +1,6 @@
 services:
   app:
+    container_name: strava-ride-insights
     image: ghcr.io/hi-otto/strava-ride-insights:latest
     ports:
       - "3000:3000"
