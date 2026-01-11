@@ -58,7 +58,7 @@ export function ActivityCard({ activity, onClick }: ActivityCardProps) {
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{activity.name}</h3>
           </div>
           <button
-            onClick={(e) => {
+            onClick={e => {
               e.stopPropagation()
               setIsShareOpen(true)
             }}

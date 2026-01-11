@@ -8,7 +8,6 @@
 
 ![image](https://github.com/user-attachments/assets/ac189e33-0eaa-481f-85c9-c2d36eab3694)
 
-
 ## 功能特点
 
 - 🔄 Strava 集成

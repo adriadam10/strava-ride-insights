@@ -8,7 +8,11 @@ interface ActivityTypeTabProps {
   availableTypes: ActivityType[]
 }
 
-export function ActivityTypeTab({ selectedType, onTypeChange, availableTypes }: ActivityTypeTabProps) {
+export function ActivityTypeTab({
+  selectedType,
+  onTypeChange,
+  availableTypes,
+}: ActivityTypeTabProps) {
   return (
     <div className="flex space-x-2 mb-4">
       {availableTypes.includes('ride') && (

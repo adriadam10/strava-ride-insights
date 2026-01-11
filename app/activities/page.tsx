@@ -15,7 +15,7 @@ export default function Activities() {
   const activityCounts = {
     ride: filterActivitiesByType(activities, 'ride').length,
     run: filterActivitiesByType(activities, 'run').length,
-    other: filterActivitiesByType(activities, 'other').length
+    other: filterActivitiesByType(activities, 'other').length,
   }
 
   const availableTypes = Object.entries(activityCounts)
@@ -24,7 +24,11 @@ export default function Activities() {
 
   // Update selected type if current type has no data
   useEffect(() => {
-    if (activities.length > 0 && !availableTypes.includes(selectedType) && availableTypes.length > 0) {
+    if (
+      activities.length > 0 &&
+      !availableTypes.includes(selectedType) &&
+      availableTypes.length > 0
+    ) {
       setSelectedType(availableTypes[0])
     }
   }, [activities, availableTypes, selectedType])
@@ -34,8 +38,8 @@ export default function Activities() {
   return (
     <div className="space-y-6">
       {availableTypes.length > 1 && (
-        <ActivityTypeTab 
-          selectedType={selectedType} 
+        <ActivityTypeTab
+          selectedType={selectedType}
           onTypeChange={setSelectedType}
           availableTypes={availableTypes}
         />

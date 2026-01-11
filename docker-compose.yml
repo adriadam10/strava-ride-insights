@@ -6,7 +6,7 @@ services:
       dockerfile: Dockerfile
       target: deps
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       - NODE_ENV=development
       - TZ=Europe/Madrid

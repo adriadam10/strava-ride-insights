@@ -15,7 +15,7 @@ export const ROUTE_STYLE = {
   width: 1,
   opacity: 0.9,
   color: 'rgb(255, 115, 17)',
-  blur: 0.99
+  blur: 0.99,
 }
 
 export const ZOOM_SETTINGS = {
@@ -24,7 +24,7 @@ export const ZOOM_SETTINGS = {
   translatePadding: 0.2, // 平移范围限制为视口的±20%,
   expandedPadding: 0.5, // 初始地图扩展所有路线外50%的范围
   initialZoom: 1,
-  initialExtendPadding: 50
+  initialExtendPadding: 50,
 }
 
 /**

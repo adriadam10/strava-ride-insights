@@ -4,7 +4,6 @@ This project is 99% code generated using Bolt.new + windsurft + Claude. The heat
 
 A modern web application that integrates with Strava to visualize and analyze your cycling activities, generate an attractive annual cycling heatmap. Built with Next.js 15, featuring a beautiful UI and comprehensive statistics.
 
-
 English | [简体中文](./README.zh-CN.md)
 
 ![image](https://github.com/user-attachments/assets/011e6598-2b0e-4b3c-a5d2-8ab9b242be21)
