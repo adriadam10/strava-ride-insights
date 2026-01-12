@@ -78,8 +78,8 @@ export function getExpandedBounds(bounds: Bounds, aspectRatio: number): Bounds {
     paddedLngSpan = paddedLatSpan * aspectRatio
   }
 
-  paddedLatSpan *= (1 + ZOOM_SETTINGS.expandedPadding * 2)
-  paddedLngSpan *= (1 + ZOOM_SETTINGS.expandedPadding * 2)
+  paddedLatSpan *= 1 + ZOOM_SETTINGS.expandedPadding * 2
+  paddedLngSpan *= 1 + ZOOM_SETTINGS.expandedPadding * 2
 
   return {
     minLat: center.lat - paddedLatSpan / 2,

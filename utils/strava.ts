@@ -102,7 +102,9 @@ export const getStravaActivities = async (
       case 403:
         throw new Error('Forbidden: You do not have access to this resource')
       case 404:
-        throw new Error('Not found: The requested activities do not exist or you are not authorized to see them')
+        throw new Error(
+          'Not found: The requested activities do not exist or you are not authorized to see them'
+        )
       case 429:
         throw new Error('Rate limit exceeded: Please try again later')
       case 500:

@@ -20,7 +20,11 @@ interface ShareField {
 export function ActivityShare({ activity, isOpen, onClose }: ActivityShareProps) {
   const t = useTranslations()
   const shareRef = useRef<HTMLDivElement>(null)
-  const [selectedFields, setSelectedFields] = useState<string[]>(['duration', 'distance_km', 'elevation'])
+  const [selectedFields, setSelectedFields] = useState<string[]>([
+    'duration',
+    'distance_km',
+    'elevation',
+  ])
   const [isGenerating, setIsGenerating] = useState(false)
 
   // 路线图尺寸配置 - 统一管理
@@ -28,7 +32,7 @@ export function ActivityShare({ activity, isOpen, onClose }: ActivityShareProps)
     width: 300,
     height: 180,
     strokeWidth: 4,
-    padding: 15
+    padding: 15,
   }
 
   const formatDuration = (seconds: number) => {
@@ -57,33 +61,33 @@ export function ActivityShare({ activity, isOpen, onClose }: ActivityShareProps)
     {
       key: 'duration',
       label: t('activities.card.duration'),
-      value: formatDuration(activity.moving_time)
+      value: formatDuration(activity.moving_time),
     },
     {
       key: 'distance_km',
       label: t('activities.card.distance'),
-      value: formatDistance(activity.distance)
+      value: formatDistance(activity.distance),
     },
     {
       key: 'elevation',
       label: t('activities.card.elevation'),
-      value: formatElevation(activity.total_elevation_gain)
+      value: formatElevation(activity.total_elevation_gain),
     },
     {
       key: 'speed_kmh',
       label: t('activities.card.speed'),
-      value: formatSpeed(activity.average_speed)
+      value: formatSpeed(activity.average_speed),
     },
     {
       key: 'power',
       label: t('activities.card.average_power'),
-      value: formatPower(activity.average_watts)
-    }
+      value: formatPower(activity.average_watts),
+    },
   ]
 
-  const selectedFieldsData = availableFields.filter(field =>
-    selectedFields.includes(field.key as string)
-  ).slice(0, 3)
+  const selectedFieldsData = availableFields
+    .filter(field => selectedFields.includes(field.key as string))
+    .slice(0, 3)
 
   const handleFieldToggle = (fieldKey: string) => {
     setSelectedFields(prev => {
@@ -97,8 +101,6 @@ export function ActivityShare({ activity, isOpen, onClose }: ActivityShareProps)
       }
     })
   }
-
-
 
   const generatePolylineFromSummary = (summaryPolyline: string) => {
     try {
@@ -172,7 +174,7 @@ export function ActivityShare({ activity, isOpen, onClose }: ActivityShareProps)
         scrollY: 0,
         // 确保捕获完整内容
         height: Math.max(rect.height, 500),
-        width: rect.width
+        width: rect.width,
       })
 
       console.log('Canvas dimensions:', canvas.width, canvas.height)
@@ -194,9 +196,7 @@ export function ActivityShare({ activity, isOpen, onClose }: ActivityShareProps)
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full mx-4">
         <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            分享活动
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">分享活动</h3>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
@@ -219,10 +219,11 @@ export function ActivityShare({ activity, isOpen, onClose }: ActivityShareProps)
                 <button
                   key={field.key as string}
                   onClick={() => handleFieldToggle(field.key as string)}
-                  className={`p-2 text-sm rounded-md border transition-colors ${selectedFields.includes(field.key as string)
+                  className={`p-2 text-sm rounded-md border transition-colors ${
+                    selectedFields.includes(field.key as string)
                       ? 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900 dark:border-blue-700 dark:text-blue-300'
                       : 'bg-gray-50 border-gray-200 text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300'
-                    }`}
+                  }`}
                 >
                   {field.label}
                 </button>
@@ -240,14 +241,10 @@ export function ActivityShare({ activity, isOpen, onClose }: ActivityShareProps)
               >
                 {/* 数据指标 - 垂直排列，从上往下 */}
                 <div className="space-y-4 mb-4 flex-shrink-0">
-                  {selectedFieldsData.map((field) => (
+                  {selectedFieldsData.map(field => (
                     <div key={field.key as string} className="text-center">
-                      <div className="text-sm text-white tracking-wide">
-                        {field.label}
-                      </div>
-                      <div className="text-3xl font-bold text-white">
-                        {field.value}
-                      </div>
+                      <div className="text-sm text-white tracking-wide">{field.label}</div>
+                      <div className="text-3xl font-bold text-white">{field.value}</div>
                     </div>
                   ))}
                 </div>
@@ -290,4 +287,4 @@ export function ActivityShare({ activity, isOpen, onClose }: ActivityShareProps)
       </div>
     </div>
   )
-} 
+}

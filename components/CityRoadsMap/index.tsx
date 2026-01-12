@@ -20,7 +20,11 @@ export function CityRoadsMap({
   const containerRef = useRef<HTMLDivElement>(null)
   const [roadNetwork, setRoadNetwork] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [transform, setTransform] = useState<Transform>({ k: ZOOM_SETTINGS.initialZoom, x: 0, y: 0 })
+  const [transform, setTransform] = useState<Transform>({
+    k: ZOOM_SETTINGS.initialZoom,
+    x: 0,
+    y: 0,
+  })
 
   const routes = useRef<DecodedRoute[]>(
     decodeRoutes(summaryPolylines || (summaryPolyline ? [summaryPolyline] : []))
@@ -28,26 +32,32 @@ export function CityRoadsMap({
 
   const boundsRef = useRef(null)
 
-  const fetchRoads = useCallback(async (bounds: any) => {
-    if (!showRoadNetwork) return // 如果不显示路网，直接返回
-    
-    try {
-      setIsLoading(true)
-      const roads = await fetchRoadNetwork(bounds)
-      setRoadNetwork(roads)
-    } catch (error) {
-      console.error('Failed to fetch road network:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [showRoadNetwork])
+  const fetchRoads = useCallback(
+    async (bounds: any) => {
+      if (!showRoadNetwork) return // 如果不显示路网，直接返回
+
+      try {
+        setIsLoading(true)
+        const roads = await fetchRoadNetwork(bounds)
+        setRoadNetwork(roads)
+      } catch (error) {
+        console.error('Failed to fetch road network:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [showRoadNetwork]
+  )
 
   useEffect(() => {
     if (!containerRef.current) return
 
     const rect = containerRef.current.getBoundingClientRect()
     routes.current = decodeRoutes(summaryPolylines || (summaryPolyline ? [summaryPolyline] : []))
-    boundsRef.current = getExpandedBounds(getBoundsForRoutes(routes.current), rect.width / rect.height)
+    boundsRef.current = getExpandedBounds(
+      getBoundsForRoutes(routes.current),
+      rect.width / rect.height
+    )
     setRoadNetwork([])
     if (showRoadNetwork) {
       fetchRoads(boundsRef.current)
@@ -79,19 +89,26 @@ export function CityRoadsMap({
     const bounds = boundsRef.current
 
     // Create projection with padding
-    const projection = d3.geoMercator()
+    const projection = d3
+      .geoMercator()
       .center([(bounds.minLng + bounds.maxLng) / 2, (bounds.minLat + bounds.maxLat) / 2])
-      .fitExtent([
-        [ZOOM_SETTINGS.initialExtendPadding, ZOOM_SETTINGS.initialExtendPadding],
-        [rect.width - ZOOM_SETTINGS.initialExtendPadding, rect.height - ZOOM_SETTINGS.initialExtendPadding]
-      ], {
-        type: 'Feature',
-        properties: {},
-        geometry: {
-          type: 'LineString',
-          coordinates: routeCoordinates
+      .fitExtent(
+        [
+          [ZOOM_SETTINGS.initialExtendPadding, ZOOM_SETTINGS.initialExtendPadding],
+          [
+            rect.width - ZOOM_SETTINGS.initialExtendPadding,
+            rect.height - ZOOM_SETTINGS.initialExtendPadding,
+          ],
+        ],
+        {
+          type: 'Feature',
+          properties: {},
+          geometry: {
+            type: 'LineString',
+            coordinates: routeCoordinates,
+          },
         }
-      })
+      )
 
     // Apply zoom transform
     ctx.save()
@@ -116,8 +133,8 @@ export function CityRoadsMap({
           type: 'Feature',
           geometry: {
             type: 'LineString',
-            coordinates: road.coordinates.map(([lat, lng]: [number, number]) => [lng, lat])
-          }
+            coordinates: road.coordinates.map(([lat, lng]: [number, number]) => [lng, lat]),
+          },
         }
         path(feature as any)
       })
@@ -133,8 +150,8 @@ export function CityRoadsMap({
         type: 'Feature',
         geometry: {
           type: 'LineString',
-          coordinates: route.points.map(([lat, lng]) => [lng, lat])
-        }
+          coordinates: route.points.map(([lat, lng]) => [lng, lat]),
+        },
       }
 
       ctx.beginPath()
@@ -153,7 +170,6 @@ export function CityRoadsMap({
     ctx.restore()
   }, [roadNetwork, transform, showRoadNetwork])
 
-
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -162,23 +178,24 @@ export function CityRoadsMap({
     const width = rect.width
     const height = rect.height
 
-    const zoom = d3.zoom()
+    const zoom = d3
+      .zoom()
       .scaleExtent([ZOOM_SETTINGS.min, ZOOM_SETTINGS.max])
       .translateExtent([
         [-width * ZOOM_SETTINGS.translatePadding, -height * ZOOM_SETTINGS.translatePadding],
-        [width * (1 + ZOOM_SETTINGS.translatePadding), height * (1 + ZOOM_SETTINGS.translatePadding)]
+        [
+          width * (1 + ZOOM_SETTINGS.translatePadding),
+          height * (1 + ZOOM_SETTINGS.translatePadding),
+        ],
       ])
-      .on('zoom', (event) => {
+      .on('zoom', event => {
         setTransform(event.transform)
       })
 
     const canvasSelection = d3.select(canvas)
     canvasSelection.call(zoom)
     // 设置初始缩放
-    canvasSelection.call(
-      zoom.transform as any,
-      d3.zoomIdentity.scale(ZOOM_SETTINGS.initialZoom)
-    )
+    canvasSelection.call(zoom.transform as any, d3.zoomIdentity.scale(ZOOM_SETTINGS.initialZoom))
     canvasSelection.on('dblclick.zoom', null)
 
     return () => {
@@ -190,14 +207,9 @@ export function CityRoadsMap({
     renderMap()
   }, [renderMap])
 
-
   return (
     <div className="relative w-full h-full" ref={containerRef}>
-      <canvas
-        ref={canvasRef}
-        className="w-full h-full"
-        style={{ minHeight: '400px' }}
-      />
+      <canvas ref={canvasRef} className="w-full h-full" style={{ minHeight: '400px' }} />
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-white/50">
           <div>Loading...</div>

@@ -22,25 +22,30 @@ async function getDB(): Promise<DBSchema> {
 
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, 2)
-    
+
     request.onerror = () => reject(request.error)
-    
+
     request.onsuccess = () => {
       dbInstance = request.result
       resolve(request.result as DBSchema)
     }
-    
-    request.onupgradeneeded = (event) => {
+
+    request.onupgradeneeded = event => {
       const db = (event.target as IDBOpenDBRequest).result as DBSchema
-      
+
       // 删除旧的数据库
       if (db.objectStoreNames.contains(STORE_NAME)) {
         db.deleteObjectStore(STORE_NAME)
       }
-      
+
       // 创建新的数据库，使用复合索引
       const store = db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true })
-      store.createIndex('bounds_idx', ['bounds.minLat', 'bounds.maxLat', 'bounds.minLng', 'bounds.maxLng'])
+      store.createIndex('bounds_idx', [
+        'bounds.minLat',
+        'bounds.maxLat',
+        'bounds.minLng',
+        'bounds.maxLng',
+      ])
       store.createIndex('timestamp_idx', 'timestamp')
     }
   })
@@ -62,7 +67,7 @@ function normalizeBounds(bounds: Bounds): Bounds {
     minLat: Number(Math.floor(bounds.minLat * Math.pow(10, precision)) / Math.pow(10, precision)),
     maxLat: Number(Math.ceil(bounds.maxLat * Math.pow(10, precision)) / Math.pow(10, precision)),
     minLng: Number(Math.floor(bounds.minLng * Math.pow(10, precision)) / Math.pow(10, precision)),
-    maxLng: Number(Math.ceil(bounds.maxLng * Math.pow(10, precision)) / Math.pow(10, precision))
+    maxLng: Number(Math.ceil(bounds.maxLng * Math.pow(10, precision)) / Math.pow(10, precision)),
   }
 }
 
@@ -71,18 +76,18 @@ async function findCachedData(bounds: Bounds): Promise<CacheItem | null> {
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(STORE_NAME, 'readonly')
     const store = transaction.objectStore(STORE_NAME)
-    
+
     // 使用游标遍历缓存数据
     const request = store.openCursor()
     const now = Date.now()
     const expiryTime = CACHE_EXPIRY_DAYS * 24 * 60 * 60 * 1000
-    
+
     request.onerror = () => reject(request.error)
     request.onsuccess = () => {
       const cursor = request.result
       if (cursor) {
         const cacheItem = cursor.value as CacheItem
-        
+
         // 检查是否过期
         if (now - cacheItem.timestamp < expiryTime) {
           // 检查边界框是否包含请求的区域
@@ -104,24 +109,24 @@ async function setCachedData(bounds: Bounds, data: any): Promise<void> {
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(STORE_NAME, 'readwrite')
     const store = transaction.objectStore(STORE_NAME)
-    
+
     const cacheItem: CacheItem = {
       bounds,
       data,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     }
-    
+
     const request = store.add(cacheItem)
-    
+
     request.onerror = () => reject(request.error)
     request.onsuccess = () => resolve()
-    
+
     // 清理过期数据
-    const expiryTime = Date.now() - (CACHE_EXPIRY_DAYS * 24 * 60 * 60 * 1000)
+    const expiryTime = Date.now() - CACHE_EXPIRY_DAYS * 24 * 60 * 60 * 1000
     const index = store.index('timestamp_idx')
     const range = IDBKeyRange.upperBound(expiryTime)
-    
-    index.openCursor(range).onsuccess = (event) => {
+
+    index.openCursor(range).onsuccess = event => {
       const cursor = (event.target as IDBRequest).result
       if (cursor) {
         cursor.delete()
@@ -137,7 +142,7 @@ async function setCachedData(bounds: Bounds, data: any): Promise<void> {
 async function deleteOldDB(): Promise<void> {
   try {
     // 检查旧版本数据库是否存在
-    const oldDBExists = await new Promise<boolean>(async (resolve) => {
+    const oldDBExists = await new Promise<boolean>(async resolve => {
       try {
         // 获取数据库列表
         const databases = await indexedDB.databases()
@@ -170,10 +175,10 @@ async function deleteOldDB(): Promise<void> {
 export async function fetchRoadNetwork(bounds: Bounds) {
   // 删除旧版本数据库
   await deleteOldDB()
-  
+
   // 规范化边界值以提高缓存命中率
   const normalizedBounds = normalizeBounds(bounds)
-  
+
   try {
     // 尝试从缓存获取数据
     const cachedData = await findCachedData(normalizedBounds)
@@ -209,14 +214,14 @@ export async function fetchRoadNetwork(bounds: Bounds) {
   }
 
   const data = await response.json()
-  
+
   // 保存到缓存
   try {
     await setCachedData(normalizedBounds, data)
   } catch (error) {
     console.warn('Failed to write to cache:', error)
   }
-  
+
   return processRoadNetwork(data)
 }
 
@@ -240,10 +245,10 @@ function processRoadNetwork(data: any) {
       }
 
       if (coordinates.length > 1) {
-        ways.push({ 
-          coordinates, 
+        ways.push({
+          coordinates,
           highway: element.tags.highway,
-          importance: getRoadImportance(element.tags.highway) // 添加道路重要性
+          importance: getRoadImportance(element.tags.highway), // 添加道路重要性
         })
       }
     }
@@ -255,18 +260,18 @@ function processRoadNetwork(data: any) {
 // 道路重要性分级
 function getRoadImportance(highway: string): number {
   const importanceMap: { [key: string]: number } = {
-    'motorway': 1,
-    'motorway_link': 1,
-    'trunk': 2,
-    'trunk_link': 2,
-    'primary': 3,
-    'primary_link': 3,
-    'secondary': 4,
-    'secondary_link': 4,
-    'tertiary': 5,
-    'tertiary_link': 5,
-    'residential': 6,
-    'living_street': 7,
+    motorway: 1,
+    motorway_link: 1,
+    trunk: 2,
+    trunk_link: 2,
+    primary: 3,
+    primary_link: 3,
+    secondary: 4,
+    secondary_link: 4,
+    tertiary: 5,
+    tertiary_link: 5,
+    residential: 6,
+    living_street: 7,
   }
   return importanceMap[highway] || 8
 }
@@ -275,7 +280,7 @@ function getRoadImportance(highway: string): number {
 export function filterRoadsByZoom(roads: any[], zoomLevel: number): any[] {
   // 缩放级别越小，显示的道路重要性等级越高（数字越小）
   let maxImportance: number
-  
+
   if (zoomLevel <= 0.8) {
     maxImportance = 3 // 只显示主要道路
   } else if (zoomLevel <= 1.5) {
@@ -283,6 +288,6 @@ export function filterRoadsByZoom(roads: any[], zoomLevel: number): any[] {
   } else {
     maxImportance = 8 // 显示所有道路
   }
-  
+
   return roads.filter(road => road.importance <= maxImportance)
 }

@@ -38,5 +38,5 @@ export async function getUserLocale(): Promise<Locale> {
 }
 
 export async function setUserLocale(locale: Locale) {
-  ; (await cookies()).set(COOKIE_NAME, locale)
+  ;(await cookies()).set(COOKIE_NAME, locale)
 }
