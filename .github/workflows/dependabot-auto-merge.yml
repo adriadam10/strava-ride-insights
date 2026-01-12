@@ -15,8 +15,8 @@ jobs:
         id: metadata
         uses: dependabot/fetch-metadata@v1.6.0
         with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
-      
+          github-token: '${{ secrets.GITHUB_TOKEN }}'
+
       - name: Enable auto-merge for Dependabot PRs
         run: gh pr merge --auto --merge "$PR_URL"
         env:
